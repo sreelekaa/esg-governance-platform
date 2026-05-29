@@ -69,11 +69,12 @@ class ActivityRecord(models.Model):
         blank=True,
         null=True
     )
+
     reviewed_by = models.CharField(
-    max_length=100,
-    blank=True,
-    null=True
-)
+        max_length=100,
+        blank=True,
+        null=True
+    )
 
     created_at = models.DateTimeField(
         auto_now_add=True
@@ -85,26 +86,35 @@ class ActivityRecord(models.Model):
 
     def save(self, *args, **kwargs):
 
-    try:
-        quantity = float(self.quantity or 0)
-    except:
-        quantity = 0.0
+        try:
+            quantity = float(self.quantity or 0)
+        except:
+            quantity = 0.0
 
-    try:
-        emission_factor = float(
-            self.emission_factor or 0
+        try:
+            emission_factor = float(
+                self.emission_factor or 0
+            )
+        except:
+            emission_factor = 0.0
+
+        self.co2_emission = (
+            quantity * emission_factor
         )
-    except:
-        emission_factor = 0.0
 
-    self.co2_emission = (
-        quantity * emission_factor
-    )
+        if self.approved:
+            self.locked = True
 
-    if self.approved:
-        self.locked = True
+        super().save(*args, **kwargs)
 
-    super().save(*args, **kwargs)
+    def __str__(self):
+
+        return (
+            f"{self.source_type} - "
+            f"{self.activity_type}"
+        )
+
+
 class AuditLog(models.Model):
 
     record = models.ForeignKey(
@@ -126,4 +136,7 @@ class AuditLog(models.Model):
 
     def __str__(self):
 
-        return f"{self.action} - {self.performed_by}"
+        return (
+            f"{self.action} - "
+            f"{self.performed_by}"
+        )

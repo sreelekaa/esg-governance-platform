@@ -17,20 +17,18 @@ def load_sample_data():
     for _, row in sap_df.iterrows():
 
         ActivityRecord.objects.create(
-            source_type="sap",
-            activity_type=str(row["PRODUCT"]),
-            facility=str(row["PLANT"]),
-            quantity=1.0,
-            unit="transaction",
-            activity_date=pd.to_datetime(
-                row["CREATIONDATE"],
-                dayfirst=True
-            ).date(),
-            emission_factor=1.4,
-            validation_status="valid",
-            suspicious=False,
-            review_comment=""
-        )
+    source_type="sap",
+    activity_type=str(row["PRODUCT"]),
+    facility=str(row["PLANT"]),
+    quantity=1.0,
+    unit="transaction",
+    activity_date=...,
+    emission_factor=1.4,
+    co2_emission=1.0 * 1.4,
+    validation_status="valid",
+    suspicious=False,
+    review_comment=""
+)
 
     # UTILITY DATA
 
@@ -60,6 +58,7 @@ def load_sample_data():
             ).date(),
             emission_factor=0.82,
             validation_status="valid",
+            co2_emission=float(energy) * 0.82,
             suspicious=suspicious,
             review_comment=(
                 "Abnormal electricity usage"
@@ -130,6 +129,7 @@ def load_sample_data():
             unit="trip",
             activity_date="2024-01-01",
             emission_factor=2.5,
+            co2_emission=1.0 * 2.5,
             validation_status="valid",
             suspicious=(departure == arrival),
             review_comment=""

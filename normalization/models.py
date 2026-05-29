@@ -40,12 +40,14 @@ class ActivityRecord(models.Model):
     activity_date = models.DateField()
 
     emission_factor = models.FloatField(
-        default=0
+        default=0.0
     )
 
     co2_emission = models.FloatField(
-        default=0
-    )
+    default=0.0,
+    null=True,
+    blank=True
+)
 
     validation_status = models.CharField(
         max_length=20,

@@ -66,22 +66,23 @@ class ApproveRecordView(APIView):
         })
 
 
-class ActivityRecordListView(ListAPIView):
+class ActivityRecordListView(APIView):
 
-    queryset = (
-        ActivityRecord.objects
-        .all()
-        .order_by("-created_at")
-    )
+    def get(self, request):
 
-    serializer_class = ActivityRecordSerializer
+        try:
 
-class AuditLogListView(ListAPIView):
+            records = ActivityRecord.objects.all()
 
-    queryset = (
-        AuditLog.objects
-        .all()
-        .order_by("-timestamp")
-    )
+            serializer = ActivityRecordSerializer(
+                records,
+                many=True
+            )
 
-    serializer_class = AuditLogSerializer
+            return Response(serializer.data)
+
+        except Exception as e:
+
+            return Response({
+                "error": str(e)
+            })

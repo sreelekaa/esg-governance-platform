@@ -48,7 +48,7 @@ INSTALLED_APPS = [
 
     'ingestion',
     'normalization',
-    'review',
+    'review.apps.ReviewConfig',
     'audit',
 ]
 

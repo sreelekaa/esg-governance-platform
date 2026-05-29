@@ -69,6 +69,11 @@ class ActivityRecord(models.Model):
         blank=True,
         null=True
     )
+    reviewed_by = models.CharField(
+    max_length=100,
+    blank=True,
+    null=True
+)
 
     created_at = models.DateTimeField(
         auto_now_add=True

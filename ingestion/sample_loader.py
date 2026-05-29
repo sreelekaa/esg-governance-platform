@@ -21,11 +21,14 @@ def load_sample_data():
         ActivityRecord.objects.create(
 
             source_type="sap",
-            activity_type=row["PRODUCT"],
-            facility=row["PLANT"],
-            quantity=1,
+            activity_type=str(row["PRODUCT"]),
+            facility=str(row["PLANT"]),
+            quantity=1.0,
             unit="transaction",
-            activity_date=pd.to_datetime( row["CREATIONDATE"], dayfirst=True).date(),
+            activity_date=pd.to_datetime(
+                row["CREATIONDATE"],
+                dayfirst=True
+            ).date(),
             emission_factor=1.4,
             validation_status="valid",
             suspicious=False,
@@ -40,7 +43,12 @@ def load_sample_data():
 
     for _, row in utility_df.iterrows():
 
-        energy = row["Actual_Energy(kwh)"]
+        try:
+            energy = float(
+                row["Actual_Energy(kwh)"]
+            )
+        except:
+            energy = 0.0
 
         suspicious = bool(
             row["Abnormal_Usage"]
@@ -50,10 +58,15 @@ def load_sample_data():
 
             source_type="utility",
             activity_type="electricity",
-            facility=row["Region_Code"],
+            facility=str(
+                row["Region_Code"]
+            ),
             quantity=energy,
             unit="kWh",
-            activity_date=pd.to_datetime(row["Date"],dayfirst=True).date(),
+            activity_date=pd.to_datetime(
+                row["Date"],
+                dayfirst=True
+            ).date(),
             emission_factor=0.82,
             validation_status="valid",
             suspicious=suspicious,
@@ -97,6 +110,8 @@ def load_sample_data():
 
             flights = []
 
+    # Fallback Sample Flights
+
     if not flights:
 
         flights = [
@@ -131,7 +146,7 @@ def load_sample_data():
             source_type="travel",
             activity_type="flight",
             facility=f"{departure}-{arrival}",
-            quantity=1,
+            quantity=1.0,
             unit="trip",
             activity_date="2024-01-01",
             emission_factor=2.5,

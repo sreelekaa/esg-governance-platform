@@ -2,9 +2,7 @@ import pandas as pd
 import os
 import requests
 
-
 from normalization.models import ActivityRecord
-
 
 
 def load_sample_data():
@@ -15,83 +13,58 @@ def load_sample_data():
     # SAP DATA
 
     sap_df = pd.read_csv(
-      "sample_data/sample_sap.csv"
-        
+        "sample_data/sample_sap.csv"
     )
 
-   for _, row in sap_df.iterrows():
+    for _, row in sap_df.iterrows():
 
-    ActivityRecord.objects.create(
+        ActivityRecord.objects.create(
 
-        source_type="sap",
-
-        activity_type=row["PRODUCT"],
-
-        facility=row["PLANT"],
-
-        quantity=1,
-
-        unit="transaction",
-
-        activity_date=row["CREATIONDATE"],
-
-        emission_factor=1.4,
-
-        validation_status="valid",
-
-        suspicious=False,
-
-        review_comment=""
-    )
+            source_type="sap",
+            activity_type=row["PRODUCT"],
+            facility=row["PLANT"],
+            quantity=1,
+            unit="transaction",
+            activity_date=row["CREATIONDATE"],
+            emission_factor=1.4,
+            validation_status="valid",
+            suspicious=False,
+            review_comment=""
+        )
 
     # UTILITY DATA
 
     utility_df = pd.read_csv(
-         "sample_data/sample_utility.csv"
-        
+        "sample_data/sample_utility.csv"
     )
 
-for _, row in utility_df.iterrows():
+    for _, row in utility_df.iterrows():
 
-    energy = row["Actual_Energy(kwh)"]
+        energy = row["Actual_Energy(kwh)"]
 
-    suspicious = bool(
-        row["Abnormal_Usage"]
-    )
-
-    ActivityRecord.objects.create(
-
-        source_type="utility",
-
-        activity_type="electricity",
-
-        facility=row["Region_Code"],
-
-        quantity=energy,
-
-        unit="kWh",
-
-        activity_date=row["Date"],
-
-        emission_factor=0.82,
-
-        validation_status="valid",
-
-        suspicious=suspicious,
-
-        review_comment=(
-
-            "Abnormal electricity usage"
-
-            if suspicious
-
-            else ""
+        suspicious = bool(
+            row["Abnormal_Usage"]
         )
-    )
 
-    # TRAVEL DATA
+        ActivityRecord.objects.create(
 
-       # TRAVEL API DATA
+            source_type="utility",
+            activity_type="electricity",
+            facility=row["Region_Code"],
+            quantity=energy,
+            unit="kWh",
+            activity_date=row["Date"],
+            emission_factor=0.82,
+            validation_status="valid",
+            suspicious=suspicious,
+            review_comment=(
+                "Abnormal electricity usage"
+                if suspicious
+                else ""
+            )
+        )
+
+    # TRAVEL API DATA
 
     API_KEY = os.getenv(
         "AVIATIONSTACK_API_KEY"
@@ -124,81 +97,46 @@ for _, row in utility_df.iterrows():
 
             flights = []
 
-    # Fallback sample flights
-
     if not flights:
 
         flights = [
-
             {
-                "departure": {
-                    "iata": "MAA"
-                },
-
-                "arrival": {
-                    "iata": "DXB"
-                }
+                "departure": {"iata": "MAA"},
+                "arrival": {"iata": "DXB"}
             },
-
             {
-                "departure": {
-                    "iata": "SIN"
-                },
-
-                "arrival": {
-                    "iata": "LHR"
-                }
+                "departure": {"iata": "SIN"},
+                "arrival": {"iata": "LHR"}
             }
         ]
 
     for flight in flights:
 
         departure = (
-            flight.get(
-                "departure",
-                {}
-            ).get(
-                "iata",
-                "UNK"
-            )
+            flight.get("departure", {})
+            .get("iata", "UNK")
         )
 
         arrival = (
-            flight.get(
-                "arrival",
-                {}
-            ).get(
-                "iata",
-                "UNK"
-            )
+            flight.get("arrival", {})
+            .get("iata", "UNK")
         )
 
-        suspicious = False
-
-        if departure == arrival:
-            suspicious = True
+        suspicious = (
+            departure == arrival
+        )
 
         ActivityRecord.objects.create(
 
             source_type="travel",
-
             activity_type="flight",
-
-            facility=
-            f"{departure}-{arrival}",
-
+            facility=f"{departure}-{arrival}",
             quantity=1,
-
             unit="trip",
-
             activity_date="2024-01-01",
-
             emission_factor=2.5,
-
             validation_status="valid",
-
             suspicious=suspicious,
-
             review_comment=(
                 "Potential duplicate route"
                 if suspicious

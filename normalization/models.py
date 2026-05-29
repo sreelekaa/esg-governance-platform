@@ -85,22 +85,26 @@ class ActivityRecord(models.Model):
 
     def save(self, *args, **kwargs):
 
-        self.co2_emission = (
-            self.quantity * self.emission_factor
+    try:
+        quantity = float(self.quantity or 0)
+    except:
+        quantity = 0.0
+
+    try:
+        emission_factor = float(
+            self.emission_factor or 0
         )
+    except:
+        emission_factor = 0.0
 
-        if self.approved:
-            self.locked = True
+    self.co2_emission = (
+        quantity * emission_factor
+    )
 
-        super().save(*args, **kwargs)
+    if self.approved:
+        self.locked = True
 
-    def __str__(self):
-
-        return (
-            f"{self.source_type} - "
-            f"{self.activity_type}"
-        )
-
+    super().save(*args, **kwargs)
 class AuditLog(models.Model):
 
     record = models.ForeignKey(

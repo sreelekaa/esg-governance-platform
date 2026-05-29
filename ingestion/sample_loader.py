@@ -12,14 +12,11 @@ def load_sample_data():
 
     # SAP DATA
 
-    sap_df = pd.read_csv(
-        "sample_data/sample_sap.csv"
-    )
+    sap_df = pd.read_csv("sample_data/sample_sap.csv")
 
     for _, row in sap_df.iterrows():
 
         ActivityRecord.objects.create(
-
             source_type="sap",
             activity_type=str(row["PRODUCT"]),
             facility=str(row["PLANT"]),
@@ -37,31 +34,25 @@ def load_sample_data():
 
     # UTILITY DATA
 
-    utility_df = pd.read_csv(
-        "sample_data/sample_utility.csv"
-    )
+    utility_df = pd.read_csv("sample_data/sample_utility.csv")
 
     for _, row in utility_df.iterrows():
 
-        try:
-            energy = float(
-                row["Actual_Energy(kwh)"]
-            )
-        except:
-            energy = 0.0
-
-        suspicious = bool(
-            row["Abnormal_Usage"]
+        energy = pd.to_numeric(
+            row["Actual_Energy(kwh)"],
+            errors="coerce"
         )
 
-        ActivityRecord.objects.create(
+        if pd.isna(energy):
+            energy = 0.0
 
+        suspicious = bool(row["Abnormal_Usage"])
+
+        ActivityRecord.objects.create(
             source_type="utility",
             activity_type="electricity",
-            facility=str(
-                row["Region_Code"]
-            ),
-            quantity=energy,
+            facility=str(row["Region_Code"]),
+            quantity=float(energy),
             unit="kWh",
             activity_date=pd.to_datetime(
                 row["Date"],
@@ -77,11 +68,9 @@ def load_sample_data():
             )
         )
 
-    # TRAVEL API DATA
+    # TRAVEL DATA
 
-    API_KEY = os.getenv(
-        "AVIATIONSTACK_API_KEY"
-    )
+    API_KEY = os.getenv("AVIATIONSTACK_API_KEY")
 
     flights = []
 
@@ -89,28 +78,18 @@ def load_sample_data():
 
         try:
 
-            url = (
-                "http://api.aviationstack.com/v1/flights"
-                f"?access_key={API_KEY}"
-            )
-
             response = requests.get(
-                url,
+                f"http://api.aviationstack.com/v1/flights?access_key={API_KEY}",
                 timeout=10
             )
 
-            data = response.json()
-
-            flights = data.get(
+            flights = response.json().get(
                 "data",
                 []
             )[:5]
 
         except Exception:
-
             flights = []
-
-    # Fallback Sample Flights
 
     if not flights:
 
@@ -127,22 +106,23 @@ def load_sample_data():
 
     for flight in flights:
 
-        departure = (
-            flight.get("departure", {})
-            .get("iata", "UNK")
+        departure = flight.get(
+            "departure",
+            {}
+        ).get(
+            "iata",
+            "UNK"
         )
 
-        arrival = (
-            flight.get("arrival", {})
-            .get("iata", "UNK")
-        )
-
-        suspicious = (
-            departure == arrival
+        arrival = flight.get(
+            "arrival",
+            {}
+        ).get(
+            "iata",
+            "UNK"
         )
 
         ActivityRecord.objects.create(
-
             source_type="travel",
             activity_type="flight",
             facility=f"{departure}-{arrival}",
@@ -151,10 +131,6 @@ def load_sample_data():
             activity_date="2024-01-01",
             emission_factor=2.5,
             validation_status="valid",
-            suspicious=suspicious,
-            review_comment=(
-                "Potential duplicate route"
-                if suspicious
-                else ""
-            )
+            suspicious=(departure == arrival),
+            review_comment=""
         )

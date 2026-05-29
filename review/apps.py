@@ -6,19 +6,4 @@ class ReviewConfig(AppConfig):
     name = "review"
 
     def ready(self):
-
-        print("REVIEW APP STARTED")
-
-        try:
-
-            from ingestion.sample_loader import load_sample_data
-
-            print("CALLING SAMPLE LOADER")
-
-            load_sample_data()
-
-            print("SAMPLE LOADER FINISHED")
-
-        except Exception as e:
-
-            print("LOADER ERROR:", e)
+        pass

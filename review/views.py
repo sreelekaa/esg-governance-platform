@@ -86,3 +86,13 @@ class ActivityRecordListView(APIView):
             return Response({
                 "error": str(e)
             })
+
+class AuditLogListView(ListAPIView):
+
+    queryset = (
+        AuditLog.objects
+        .all()
+        .order_by("-timestamp")
+    )
+
+    serializer_class = AuditLogSerializer

@@ -15,7 +15,7 @@ def load_sample_data():
     # SAP DATA
 
     sap_df = pd.read_csv(
-        "sample_data/erp_transactions.csv"
+      "sample_data/sample_sap.csv"
         
     )
 
@@ -53,7 +53,7 @@ def load_sample_data():
     # UTILITY DATA
 
     utility_df = pd.read_csv(
-        "sample_data/Intelligent_abnormal_electricity_usage_dataset_REALWORLD.csv"
+         "sample_data/sample_utility.csv"
         
     )
 

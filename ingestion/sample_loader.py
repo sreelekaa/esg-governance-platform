@@ -19,36 +19,30 @@ def load_sample_data():
         
     )
 
-    for _, row in sap_df.iterrows():
+   for _, row in sap_df.iterrows():
 
-        ActivityRecord.objects.create(
+    ActivityRecord.objects.create(
 
-            source_type="sap",
+        source_type="sap",
 
-            activity_type=row["PRODUCT"],
+        activity_type=row["PRODUCT"],
 
-            facility=row["PLANT"],
+        facility=row["PLANT"],
 
-            quantity=row["CUMULATIVEORDERQUANTITY"],
+        quantity=1,
 
-            unit="liters",
+        unit="transaction",
 
-            activity_date=row["CREATIONDATE"],
+        activity_date=row["CREATIONDATE"],
 
-            emission_factor=1.4,
+        emission_factor=1.4,
 
-            validation_status="valid",
+        validation_status="valid",
 
-            suspicious=(
-                row["CUMULATIVEORDERQUANTITY"] > 10000
-            ),
+        suspicious=False,
 
-            review_comment=(
-                "High procurement quantity"
-                if row["CUMULATIVEORDERQUANTITY"] > 10000
-                else ""
-            )
-        )
+        review_comment=""
+    )
 
     # UTILITY DATA
 
@@ -57,36 +51,43 @@ def load_sample_data():
         
     )
 
-    for _, row in utility_df.iterrows():
+for _, row in utility_df.iterrows():
 
-        ActivityRecord.objects.create(
+    energy = row["Actual_Energy(kwh)"]
 
-            source_type="utility",
+    suspicious = bool(
+        row["Abnormal_Usage"]
+    )
 
-            activity_type="electricity",
+    ActivityRecord.objects.create(
 
-            facility=row["facility"],
+        source_type="utility",
 
-            quantity=row["usage_kwh"],
+        activity_type="electricity",
 
-            unit="kWh",
+        facility=row["Region_Code"],
 
-            activity_date="2024-01-01",
+        quantity=energy,
 
-            emission_factor=0.82,
+        unit="kWh",
 
-            validation_status="valid",
+        activity_date=row["Date"],
 
-            suspicious=(
-                row["usage_kwh"] > 5000
-            ),
+        emission_factor=0.82,
 
-            review_comment=(
-                "Abnormally high electricity usage"
-                if row["usage_kwh"] > 5000
-                else ""
-            )
+        validation_status="valid",
+
+        suspicious=suspicious,
+
+        review_comment=(
+
+            "Abnormal electricity usage"
+
+            if suspicious
+
+            else ""
         )
+    )
 
     # TRAVEL DATA
 
